@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
@@ -126,7 +127,7 @@ def detect_and_classify_cards(image: np.ndarray, players: int = 1) -> tuple:
     
     # 3. Filter for card-like contours (quadrilaterals with large area)
     card_contours = []
-    min_area = 5000  # Reduced from 10000
+    min_area = 10000  # Reduced from 10000
     
     for i, cnt in enumerate(contours):
         area = cv2.contourArea(cnt)
@@ -391,8 +392,33 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
                 content={"error": "Could not decode image"}
             )
         
+        print(f"Original image format: {file.content_type}")
         print(f"Image shape: {image.shape}")
         print(f"Number of players: {players}")
+        
+        # Convert to PNG format as part of preprocessing
+        # Encode as PNG and decode back to ensure consistent format
+        success, png_buffer = cv2.imencode('.png', image)
+        if not success:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to convert image to PNG format"}
+            )
+        
+        # Decode the PNG back to ensure we're working with PNG-processed image
+        image = cv2.imdecode(png_buffer, cv2.IMREAD_COLOR)
+        print(f"Converted to PNG format - Image shape: {image.shape}")
+        
+        # Limit image resolution to max 1500 pixels in any direction
+        max_dimension = 1500
+        height, width = image.shape[:2]
+        if height > max_dimension or width > max_dimension:
+            # Calculate scale factor to fit within max_dimension x max_dimension
+            scale_factor = min(max_dimension / height, max_dimension / width)
+            new_width = int(width * scale_factor)
+            new_height = int(height * scale_factor)
+            image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            print(f"Reduced resolution from {width}x{height} to {new_width}x{new_height} (scale: {scale_factor:.3f})")
         
         # Resize image if it's too small (but maintain aspect ratio)
         min_height, min_width = 400, 400
@@ -401,7 +427,7 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
             new_width = int(image.shape[1] * scale_factor)
             new_height = int(image.shape[0] * scale_factor)
             image = cv2.resize(image, (new_width, new_height))
-            print(f"Resized image to: {image.shape}")
+            print(f"Upscaled small image to: {image.shape}")
 
         # Use notebook-style detection instead of simple region splitting
         dealer_cards, player1_cards, player2_cards = detect_and_classify_cards(image, players)
@@ -440,3 +466,8 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
             status_code=500,
             content={"error": f"Error processing image: {str(e)}"}
         )
+
+# === Server Startup ===
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

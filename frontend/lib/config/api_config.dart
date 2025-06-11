@@ -8,7 +8,7 @@ class ApiConfig {
   static String get baseUrl {
     if (kIsWeb) {
       // For web, use localhost
-      return 'http://localhost:8000';
+      return 'http://$_computerIpAddress:8000';
     } else if (io.Platform.isAndroid) {
       // For Android emulator, use 10.0.2.2
       // For physical device, use your computer's IP address
