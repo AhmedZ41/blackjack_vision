@@ -21,7 +21,7 @@ app.add_middleware(
 
 
 # === CONFIG ===
-CARD_TEMPLATES_PATH = "PNG-cards"
+CARD_TEMPLATES_PATH = "Cards/"
 
 # === Load templates ===
 def load_templates() -> List[Tuple[str, np.ndarray]]:
@@ -127,7 +127,7 @@ def detect_and_classify_cards(image: np.ndarray, players: int = 1) -> tuple:
     
     # 3. Filter for card-like contours (quadrilaterals with large area)
     card_contours = []
-    min_area = 10000  # Reduced from 10000
+    min_area = 5000  # Reduced from 10000
     
     for i, cnt in enumerate(contours):
         area = cv2.contourArea(cnt)
