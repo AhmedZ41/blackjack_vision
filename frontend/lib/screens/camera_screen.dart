@@ -13,6 +13,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart'; // For web camera support
 
 
+const Color retroAccent = Color(0xFF00FFD1); 
 
 
 
@@ -252,7 +253,7 @@ Widget build(BuildContext context) {
                 if (_webImage != null)
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.greenAccent, width: 2),
+                      border: Border.all(color: retroAccent, width: 2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Image.network(_webImage!.path, width: 300),
@@ -297,7 +298,7 @@ Widget build(BuildContext context) {
                   },
                 );
               } else {
-                return const Center(child: CircularProgressIndicator(color: Colors.greenAccent));
+                return const Center(child: CircularProgressIndicator(color: retroAccent));
               }
             },
           ),
@@ -309,13 +310,13 @@ Widget _retroButton(String label, VoidCallback onPressed) {
     onPressed: onPressed,
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.black,
-      foregroundColor: Colors.greenAccent,
-      shadowColor: Colors.greenAccent,
+      foregroundColor: retroAccent,
+      shadowColor: retroAccent,
       elevation: 8,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Colors.greenAccent),
+        side: const BorderSide(color: retroAccent),
       ),
     ),
     child: Text(
@@ -333,8 +334,8 @@ Widget _retroButton(String label, VoidCallback onPressed) {
 Widget _fabRetro(IconData icon, VoidCallback onPressed) {
   return FloatingActionButton(
     backgroundColor: Colors.black,
-    foregroundColor: Colors.greenAccent,
-    shape: const StadiumBorder(side: BorderSide(color: Colors.greenAccent)),
+    foregroundColor: retroAccent,
+    shape: const StadiumBorder(side: BorderSide(color: retroAccent)),
     onPressed: onPressed,
     child: Icon(icon),
   );

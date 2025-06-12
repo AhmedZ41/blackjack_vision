@@ -68,8 +68,8 @@ class PlayerSelectionScreen extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  backgroundColor: const Color(0xFF3A3AFF),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFF00FFD1),
+                  foregroundColor: Colors.black,
                   textStyle: const TextStyle(fontSize: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
