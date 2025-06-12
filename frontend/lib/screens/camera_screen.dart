@@ -241,83 +241,102 @@ void _showErrorDialog(String message) {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: kIsWeb
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_webImage != null)
-                    Image.network(_webImage!.path, width: 300),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _captureWebImage,
-                    child: const Text("Capture with Webcam"),
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.black,
+    body: kIsWeb
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_webImage != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.greenAccent, width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Image.network(_webImage!.path, width: 300),
                   ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _pickImageFromGallery,
-                    child: const Text("Upload Image"),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _testConnection,
-                    child: const Text("Test Backend Connection"),
-                  ),
-                ],
-              ),
-            )
-          : FutureBuilder(
-              future: _initializeControllerFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        children: [
-                          cam.CameraPreview(_controller),
-                          _buildOverlay(constraints),
-                          Positioned(
-                            bottom: 30,
-                            left: MediaQuery.of(context).size.width / 2 - 30,
-                            child: Row(
-                              children: [
-                                FloatingActionButton(
-                                  heroTag: 'camera',
-                                  onPressed: () async {
-                                    await _captureMobileImage();
-                                  },
-                                  child: const Icon(Icons.camera_alt),
-                                ),
-                                const SizedBox(width: 20),
-                                FloatingActionButton(
-                                  heroTag: 'gallery',
-                                  onPressed: () async {
-                                    await _pickImageFromGallery();
-                                  },
-                                  child: const Icon(Icons.photo_library),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            top: 50,
-                            right: 20,
-                            child: ElevatedButton(
-                              onPressed: _testConnection,
-                              child: const Text("Test Connection"),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
+                const SizedBox(height: 60),
+                _retroButton("Open Camera", _captureWebImage),
+                const SizedBox(height: 10),
+                _retroButton("Upload Image", _pickImageFromGallery),
+                //const SizedBox(height: 10),
+                //_retroButton("Test Backend Connection", _testConnection),
+              ],
             ),
-    );
-  }
+          )
+        : FutureBuilder(
+            future: _initializeControllerFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        cam.CameraPreview(_controller),
+                        _buildOverlay(constraints),
+                        Positioned(
+                          bottom: 30,
+                          left: MediaQuery.of(context).size.width / 2 - 90,
+                          child: Row(
+                            children: [
+                              _fabRetro(Icons.camera_alt, _captureMobileImage),
+                              const SizedBox(width: 20),
+                              _fabRetro(Icons.photo_library, _pickImageFromGallery),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          top: 50,
+                          right: 20,
+                          child: _retroButton("Test Connection", _testConnection),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator(color: Colors.greenAccent));
+              }
+            },
+          ),
+  );
+}
+
+Widget _retroButton(String label, VoidCallback onPressed) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.greenAccent,
+      shadowColor: Colors.greenAccent,
+      elevation: 8,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Colors.greenAccent),
+      ),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        fontFamily: 'Courier',
+        fontSize: 14,
+        letterSpacing: 1.5,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+}
+
+Widget _fabRetro(IconData icon, VoidCallback onPressed) {
+  return FloatingActionButton(
+    backgroundColor: Colors.black,
+    foregroundColor: Colors.greenAccent,
+    shape: const StadiumBorder(side: BorderSide(color: Colors.greenAccent)),
+    onPressed: onPressed,
+    child: Icon(icon),
+  );
+}
 }
