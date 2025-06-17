@@ -12,6 +12,7 @@ import io
 
 app = FastAPI()
 
+#nothing
 # 👇 Now it's safe to call this
 app.add_middleware(
     CORSMiddleware,
