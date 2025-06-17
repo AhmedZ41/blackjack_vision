@@ -73,7 +73,7 @@ Future<void> _uploadImage(XFile image, int players) async {
   );
 
   try {
-    final uri = Uri.parse("http://192.168.178.26:8000/analyze/");
+    final uri = Uri.parse("${ApiConfig.baseUrl}/analyze/");
     final request = http.MultipartRequest('POST', uri)
       ..fields['players'] = players.toString();
 

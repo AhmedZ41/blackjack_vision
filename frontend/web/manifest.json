@@ -1,11 +1,11 @@
 {
-    "name": "frontend",
-    "short_name": "frontend",
+    "name": "Blackjack Vision AI",
+    "short_name": "Blackjack AI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1E1E1E",
+    "theme_color": "#1E1E1E",
+    "description": "Detect and score playing cards using computer vision and AI",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

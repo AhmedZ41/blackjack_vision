@@ -5,9 +5,17 @@ class ApiConfig {
   // Your computer's IP address for mobile device testing
   static const String _computerIpAddress = '192.168.178.26';
   
+  // Production backend URL - Update this with your deployed backend URL
+  static const String _productionBackendUrl = 'https://blackjack-vision-backend.onrender.com';
+  
   static String get baseUrl {
+    // In production build, use the production backend
+    if (kReleaseMode) {
+      return _productionBackendUrl;
+    }
+    
     if (kIsWeb) {
-      // For web, use localhost
+      // For web development, use localhost
       return 'http://$_computerIpAddress:8000';
     } else if (io.Platform.isAndroid) {
       // For Android emulator, use 10.0.2.2
