@@ -1,12 +1,14 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
 import os
 from typing import List, Tuple
 import json
+import base64
+import io
 
 app = FastAPI()
 
@@ -54,6 +56,107 @@ def order_points(pts):
     rect[1] = pts[np.argmin(diff)]  # top-right
     rect[3] = pts[np.argmax(diff)]  # bottom-left
     return rect
+
+def create_marked_contours_image(image, players):
+    """Create an image with marked card contours for visualization"""
+    # Create a copy of the original image
+    marked_image = image.copy()
+    
+    # Same preprocessing as in analyze endpoint
+    max_dimension = 1500
+    height, width = image.shape[:2]
+    if height > max_dimension or width > max_dimension:
+        scale_factor = min(max_dimension / height, max_dimension / width)
+        new_width = int(width * scale_factor)
+        new_height = int(height * scale_factor)
+        marked_image = cv2.resize(marked_image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    
+    min_height, min_width = 400, 400
+    if marked_image.shape[0] < min_height or marked_image.shape[1] < min_width:
+        scale_factor = max(min_height / marked_image.shape[0], min_width / marked_image.shape[1])
+        new_width = int(marked_image.shape[1] * scale_factor)
+        new_height = int(marked_image.shape[0] * scale_factor)
+        marked_image = cv2.resize(marked_image, (new_width, new_height))
+    
+    # Detect card contours (same logic as detect_and_classify_cards)
+    gray = cv2.cvtColor(marked_image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # Filter contours for card-like shapes
+    card_contours = []
+    min_area = 5000
+    
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > min_area:
+            # Approximate contour to reduce points
+            epsilon = 0.02 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
+            
+            if len(approx) >= 4:
+                x, y, w, h = cv2.boundingRect(contour)
+                aspect_ratio = float(w) / h
+                if 0.5 <= aspect_ratio <= 2.0:
+                    card_contours.append(contour)
+    
+    # Draw contours and classify them
+    h, w = marked_image.shape[:2]
+    dealer_contours = []
+    player_contours = []
+    
+    for cnt in card_contours:
+        # Calculate centroid
+        M = cv2.moments(cnt)
+        if M["m00"] != 0:
+            cY = int(M["m01"] / M["m00"])
+            cX = int(M["m10"] / M["m00"])
+        else:
+            x, y, ww, hh = cv2.boundingRect(cnt)
+            cY = y + hh // 2
+            cX = x + ww // 2
+        
+        if cY < h / 2:
+            dealer_contours.append(cnt)
+            # Draw dealer contours in blue
+            cv2.drawContours(marked_image, [cnt], -1, (255, 0, 0), 3)
+            cv2.putText(marked_image, 'DEALER', (cX-30, cY-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+        else:
+            player_contours.append(cnt)
+            # Draw player contours in green
+            cv2.drawContours(marked_image, [cnt], -1, (0, 255, 0), 3)
+            # Determine which player based on x position for 2 players
+            if players == 2:
+                if cX < w / 2:
+                    cv2.putText(marked_image, 'PLAYER 1', (cX-40, cY+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                else:
+                    cv2.putText(marked_image, 'PLAYER 2', (cX-40, cY+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            else:
+                cv2.putText(marked_image, 'PLAYER 1', (cX-40, cY+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+    
+    # Add region overlay to show where each player's area is
+    overlay = marked_image.copy()
+    
+    # Dealer area (top half)
+    cv2.rectangle(overlay, (0, 0), (w, h//2), (255, 0, 0), -1)
+    
+    if players == 1:
+        # Single player area (bottom half)
+        cv2.rectangle(overlay, (0, h//2), (w, h), (0, 255, 0), -1)
+    else:
+        # Two player areas (bottom half split)
+        cv2.rectangle(overlay, (0, h//2), (w//2, h), (0, 255, 0), -1)
+        cv2.rectangle(overlay, (w//2, h//2), (w, h), (0, 255, 255), -1)
+    
+    # Blend overlay with original image
+    alpha = 0.1
+    marked_image = cv2.addWeighted(marked_image, 1-alpha, overlay, alpha, 0)
+    
+    # Add title text
+    cv2.putText(marked_image, f'Detected Cards ({len(card_contours)} found)', (10, 30), 
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    
+    return marked_image
 
 def four_point_transform(image, pts, width=200, height=300):
     """Perspective transform to get bird's-eye view of card"""
@@ -284,7 +387,7 @@ def match_cards_to_templates(warped_cards: List[np.ndarray], templates: List[Tup
     for i, card in enumerate(warped_cards):
         # Convert to grayscale and blur
         card_gray = cv2.cvtColor(card, cv2.COLOR_BGR2GRAY)
-        card_blurred = cv2.GaussianBlur(card_gray, (3, 3), 0)
+        card_blurred = cv2.GaussianBlur(card_gray, (3, 3), 0);
         
         best_rank = None
         best_score = -1
@@ -364,6 +467,52 @@ async def debug_templates():
             "size": f"{template.shape[1]}x{template.shape[0]}"
         })
     return {"templates": template_info, "total": len(TEMPLATES)}
+
+# === Get marked contours image ===
+@app.post("/analyze/marked-contours/")
+async def get_marked_contours(file: UploadFile = File(...), players: int = Form(...)):
+    """Return the image with detected card contours marked"""
+    try:
+        image_data = await file.read()
+        nparr = np.frombuffer(image_data, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if image is None:
+            return JSONResponse(
+                status_code=400, 
+                content={"error": "Could not decode image"}
+            )
+        
+        print(f"Creating marked contours image for {players} players")
+        
+        # Create marked image
+        marked_image = create_marked_contours_image(image, players)
+        
+        # Encode image as base64 for JSON response
+        success, buffer = cv2.imencode('.png', marked_image)
+        if not success:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to encode marked image"}
+            )
+        
+        # Convert to base64
+        image_base64 = base64.b64encode(buffer).decode('utf-8')
+        
+        return JSONResponse(content={
+            "success": True,
+            "image": f"data:image/png;base64,{image_base64}",
+            "message": "Marked contours image generated successfully"
+        })
+        
+    except Exception as e:
+        print(f"Error creating marked contours image: {e}")
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Error creating marked contours image: {str(e)}"}
+        )
 
 # === Health Check Endpoint ===
 @app.get("/health")

@@ -99,7 +99,11 @@ Future<void> _uploadImage(XFile image, int players) async {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultsScreen(resultsJson: responseBody),
+          builder: (context) => ResultsScreen(
+            resultsJson: responseBody,
+            originalImage: image,
+            players: players,
+          ),
         ),
       );
     } else {
