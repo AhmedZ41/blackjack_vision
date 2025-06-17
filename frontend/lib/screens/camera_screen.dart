@@ -73,7 +73,7 @@ Future<void> _uploadImage(XFile image, int players) async {
   );
 
   try {
-    final uri = Uri.parse("${ApiConfig.baseUrl}/analyze/");
+    final uri = Uri.parse("https://blackjack-vision-backend.onrender.com/analyze/");
     final request = http.MultipartRequest('POST', uri)
       ..fields['players'] = players.toString();
 
@@ -262,8 +262,8 @@ Widget build(BuildContext context) {
                 _retroButton("Open Camera", _captureWebImage),
                 const SizedBox(height: 10),
                 _retroButton("Upload Image", _pickImageFromGallery),
-                //const SizedBox(height: 10),
-                //_retroButton("Test Backend Connection", _testConnection),
+                const SizedBox(height: 10),
+                _retroButton("Test Backend Connection", _testConnection),
               ],
             ),
           )
