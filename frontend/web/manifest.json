@@ -1,11 +1,11 @@
 {
-    "name": "Blackjack Vision AI",
-    "short_name": "Blackjack AI",
+    "name": "Blackjack Vision",
+    "short_name": "Blackjack Vision",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#1E1E1E",
-    "theme_color": "#1E1E1E",
-    "description": "Detect and score playing cards using computer vision and AI",
+    "background_color": "#0d1117",
+    "theme_color": "#2e7d32",
+    "description": "AI-powered blackjack card recognition and strategy advisor",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

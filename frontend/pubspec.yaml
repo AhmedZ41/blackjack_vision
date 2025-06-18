@@ -1,6 +1,27 @@
-name: frontend
-description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
+name: blackjack_vision
+description: "AI-powered blackjack card recognition and strategy advisor app."
+# The following line prevents the package# For details regarding fonts from package dependencies,
+# see https://flutter.dev/to/font-from-package
+
+# Flutter Launcher Icons Configuration
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "icons/android/ic_launcher-web.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "icons/android/ic_launcher-web.png"
+    background_color: "#0d1117"
+    theme_color: "#2e7d32"
+  windows:
+    generate: true
+    image_path: "icons/android/ic_launcher-web.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "icons/android/ic_launcher-web.png"
+  remove_alpha_ios: truerom being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -44,6 +65,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
