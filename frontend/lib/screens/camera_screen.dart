@@ -20,7 +20,13 @@ const Color retroAccent = Color(0xFF00FFD1);
 
 class CameraScreen extends StatefulWidget {
   final int players;
-  const CameraScreen({super.key, required this.players});
+  final bool isAdviceMode;
+  
+  const CameraScreen({
+    super.key, 
+    required this.players, 
+    this.isAdviceMode = false
+  });
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -73,9 +79,15 @@ Future<void> _uploadImage(XFile image, int players) async {
   );
 
   try {
-    final uri = Uri.parse("https://blackjack-vision-backend.onrender.com/analyze/");
-    final request = http.MultipartRequest('POST', uri)
-      ..fields['players'] = players.toString();
+    final uri = Uri.parse("${ApiConfig.baseUrl}/analyze/");
+    final request = http.MultipartRequest('POST', uri);
+    
+    // Handle advice mode vs normal mode
+    if (widget.isAdviceMode) {
+      request.fields['players'] = 'advice';
+    } else {
+      request.fields['players'] = players.toString();
+    }
 
     if (kIsWeb) {
       final bytes = await image.readAsBytes();
@@ -103,6 +115,7 @@ Future<void> _uploadImage(XFile image, int players) async {
             resultsJson: responseBody,
             originalImage: image,
             players: players,
+            isAdviceMode: widget.isAdviceMode,
           ),
         ),
       );
@@ -172,6 +185,37 @@ void _showErrorDialog(String message) {
     final height = constraints.maxHeight;
     final width = constraints.maxWidth;
 
+    // Special overlay for advice mode
+    if (widget.isAdviceMode) {
+      return Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            width: width,
+            height: height,
+            child: Container(
+              color: Colors.orange.withOpacity(0.2),
+              alignment: Alignment.center,
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Place Your Cards Here\n(AI Advice Mode)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Normal overlay for 1-2 players
     return Stack(
       children: [
         Positioned(

@@ -78,6 +78,34 @@ class PlayerSelectionScreen extends StatelessWidget {
                 ),
                 child: const Text('2 Players'),
               ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CameraScreen(players: 0, isAdviceMode: true)),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.black,
+                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.psychology, size: 24),
+                    SizedBox(width: 8),
+                    Text('Get an Advice'),
+                  ],
+                ),
+              ),
               const Spacer(),
             ],
           ),

@@ -367,6 +367,85 @@ def detect_and_classify_cards(image: np.ndarray, players: int = 1) -> tuple:
     print(f"Extracted cards: {len(dealer_cards)} dealer, {len(player1_cards)} player1, {len(player2_cards)} player2")
     return dealer_cards, player1_cards, player2_cards
 
+def detect_and_classify_cards_advice_mode(image: np.ndarray) -> tuple:
+    """
+    Detect cards in advice mode - treat entire image as player area.
+    Returns ([], player_cards, []) - empty dealer and player2 arrays.
+    """
+    print(f"Starting advice mode card detection on image shape: {image.shape}")
+    
+    # 1. Preprocessing (same as regular detection)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+    
+    # 2. Find contours
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    print(f"Found {len(contours)} total contours in advice mode")
+    
+    # 3. Filter for card-like contours (same logic as regular detection)
+    card_contours = []
+    min_area = 5000  # Same threshold as regular detection
+    
+    for i, cnt in enumerate(contours):
+        area = cv2.contourArea(cnt)
+        peri = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+        
+        print(f"Advice mode contour {i}: area={area:.0f}, vertices={len(approx)}")
+        
+        # Same criteria as regular detection
+        if len(approx) >= 4 and area > min_area:
+            # Check aspect ratio for card-like shape
+            x, y, w, h = cv2.boundingRect(cnt)
+            aspect_ratio = w / h if h > 0 else 0
+            
+            # Cards typically have aspect ratio between 0.5 and 2.0
+            if 0.5 <= aspect_ratio <= 2.0:
+                card_contours.append(approx)
+                print(f"  → Added as card contour (aspect ratio: {aspect_ratio:.2f})")
+            else:
+                print(f"  → Rejected: bad aspect ratio {aspect_ratio:.2f}")
+        else:
+            if area <= min_area:
+                print(f"  → Rejected: area too small")
+            else:
+                print(f"  → Rejected: not enough vertices")
+    
+    print(f"Found {len(card_contours)} card-like contours in advice mode")
+    
+    if len(card_contours) == 0:
+        print("No card contours detected in advice mode!")
+        return [], [], []
+    
+    # 4. In advice mode, ALL detected cards are player cards
+    # Sort by x position (left to right) for consistent ordering
+    card_contours = sorted(card_contours, key=get_leftmost_x)
+    
+    # 5. Extract and warp all cards as player cards
+    player_cards = []
+    for i, cnt in enumerate(card_contours):
+        try:
+            if len(cnt) >= 4:
+                if len(cnt) > 4:
+                    # Use bounding rectangle as fallback
+                    x, y, w, h = cv2.boundingRect(cnt)
+                    pts = np.array([[x, y], [x+w, y], [x+w, y+h], [x, y+h]], dtype=np.float32)
+                else:
+                    pts = cnt.reshape(4, 2).astype(np.float32)
+                
+                warped = four_point_transform(image, pts)
+                player_cards.append(warped)
+                print(f"Successfully warped advice mode card {i+1}")
+            else:
+                print(f"Advice mode contour {i+1} has insufficient points: {len(cnt)}")
+        except Exception as e:
+            print(f"Error warping advice mode card {i+1}: {e}")
+    
+    print(f"Extracted {len(player_cards)} cards in advice mode")
+    # Return empty dealer and player2 arrays, all cards go to player1
+    return [], player_cards, []
+
 def match_cards_to_templates(warped_cards: List[np.ndarray], templates: List[Tuple[str, np.ndarray]]) -> List[str]:
     """Match warped cards to templates using multi-metric scoring"""
     detected_ranks = []
@@ -530,7 +609,7 @@ async def analyze_get():
     }
 
 @app.post("/analyze/")
-async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
+async def analyze_image(file: UploadFile = File(...), players: str = Form(...)):
     try:
         image_data = await file.read()
         nparr = np.frombuffer(image_data, np.uint8)
@@ -544,7 +623,13 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
         
         print(f"Original image format: {file.content_type}")
         print(f"Image shape: {image.shape}")
-        print(f"Number of players: {players}")
+        print(f"Players parameter: {players}")
+        
+        # Check if this is advice mode
+        is_advice_mode = players == "advice"
+        num_players = 0 if is_advice_mode else int(players)
+        
+        print(f"Advice mode: {is_advice_mode}, Number of players: {num_players}")
         
         # Convert to PNG format as part of preprocessing
         # Encode as PNG and decode back to ensure consistent format
@@ -579,32 +664,50 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
             image = cv2.resize(image, (new_width, new_height))
             print(f"Upscaled small image to: {image.shape}")
 
-        # Use notebook-style detection instead of simple region splitting
-        dealer_cards, player1_cards, player2_cards = detect_and_classify_cards(image, players)
+        # Use notebook-style detection, but handle advice mode differently
+        if is_advice_mode:
+            # In advice mode, treat entire image as player area (no dealer)
+            # We'll modify detect_and_classify_cards to handle this
+            dealer_cards, player1_cards, player2_cards = detect_and_classify_cards_advice_mode(image)
+        else:
+            dealer_cards, player1_cards, player2_cards = detect_and_classify_cards(image, num_players)
         
         # Match cards to templates
-        dealer_ranks = match_cards_to_templates(dealer_cards, TEMPLATES)
+        dealer_ranks = match_cards_to_templates(dealer_cards, TEMPLATES) if not is_advice_mode else []
         player1_ranks = match_cards_to_templates(player1_cards, TEMPLATES)
         player2_ranks = match_cards_to_templates(player2_cards, TEMPLATES) if player2_cards else []
         
         print(f"Detected cards - Dealer: {dealer_ranks}, Player1: {player1_ranks}, Player2: {player2_ranks}")
 
-        results = {
-            "dealer": {
-                "cards": dealer_ranks,
-                "score": calculate_score(dealer_ranks)
-            },
-            "player1": {
-                "cards": player1_ranks,
-                "score": calculate_score(player1_ranks)
+        if is_advice_mode:
+            # Generate AI advice for the detected cards
+            advice = calculate_blackjack_advice(player1_ranks)
+            
+            results = {
+                "player1": {
+                    "cards": player1_ranks,
+                    "score": calculate_score(player1_ranks)
+                },
+                "advice": advice
             }
-        }
+        else:
+            # Normal game mode
+            results = {
+                "dealer": {
+                    "cards": dealer_ranks,
+                    "score": calculate_score(dealer_ranks)
+                },
+                "player1": {
+                    "cards": player1_ranks,
+                    "score": calculate_score(player1_ranks)
+                }
+            }
 
-        if players == 2:
-            results["player2"] = {
-                "cards": player2_ranks,
-                "score": calculate_score(player2_ranks)
-            }
+            if num_players == 2:
+                results["player2"] = {
+                    "cards": player2_ranks,
+                    "score": calculate_score(player2_ranks)
+                }
 
         return JSONResponse(content=results)
     
@@ -616,6 +719,259 @@ async def analyze_image(file: UploadFile = File(...), players: int = Form(...)):
             status_code=500,
             content={"error": f"Error processing image: {str(e)}"}
         )
+
+# === Blackjack Strategy AI ===
+def calculate_blackjack_advice(player_cards, dealer_upcard=None):
+    """
+    Calculate optimal blackjack strategy advice based on basic strategy
+    """
+    player_score = calculate_score(player_cards)
+    
+    # If player has busted, no advice needed
+    if player_score > 21:
+        return {
+            "advice": "BUST - You've exceeded 21",
+            "win_probability": 0,
+            "explanation": "Your hand value is over 21, so you've automatically lost this hand."
+        }
+    
+    # Check for blackjack
+    if player_score == 21 and len(player_cards) == 2:
+        return {
+            "advice": "BLACKJACK! Stand",
+            "win_probability": 95,
+            "explanation": "You have a natural blackjack (21 with 2 cards). This is the best possible hand!"
+        }
+    
+    # Check if hand is soft (contains usable ace)
+    has_ace = any('Ace' in card for card in player_cards)
+    is_soft = has_ace and player_score <= 21
+    
+    # Basic strategy without dealer card (conservative approach)
+    if dealer_upcard is None:
+        return get_basic_advice_no_dealer(player_score, is_soft, len(player_cards))
+    
+    # Basic strategy with dealer card
+    return get_basic_strategy_advice(player_score, dealer_upcard, is_soft, len(player_cards))
+
+def get_basic_advice_no_dealer(player_score, is_soft, num_cards):
+    """Basic advice when dealer card is unknown (conservative strategy)"""
+    
+    if is_soft:
+        # Soft totals (with Ace counted as 11)
+        if player_score <= 17:
+            return {
+                "advice": "HIT",
+                "win_probability": 65,
+                "explanation": f"With a soft {player_score}, hitting is safe since the Ace can be counted as 1 if needed."
+            }
+        elif player_score <= 18:
+            return {
+                "advice": "STAND (or HIT if feeling aggressive)",
+                "win_probability": 55,
+                "explanation": f"Soft {player_score} is borderline. Standing is safer, but hitting can improve your hand."
+            }
+        else:
+            return {
+                "advice": "STAND",
+                "win_probability": 75,
+                "explanation": f"Soft {player_score} is a strong hand. Don't risk busting."
+            }
+    else:
+        # Hard totals
+        if player_score <= 11:
+            return {
+                "advice": "HIT",
+                "win_probability": 70,
+                "explanation": f"With {player_score}, you cannot bust on the next card. Always hit."
+            }
+        elif player_score <= 16:
+            return {
+                "advice": "HIT",
+                "win_probability": 45,
+                "explanation": f"With {player_score}, you're likely to lose if you stand. Hit to try to improve."
+            }
+        elif player_score <= 19:
+            return {
+                "advice": "STAND",
+                "win_probability": 70,
+                "explanation": f"With {player_score}, you have a good hand. Standing is the optimal play."
+            }
+        else:
+            return {
+                "advice": "STAND",
+                "win_probability": 85,
+                "explanation": f"With {player_score}, you have an excellent hand. Always stand."
+            }
+
+def get_basic_strategy_advice(player_score, dealer_upcard, is_soft, num_cards):
+    """Advanced basic strategy with dealer upcard consideration"""
+    
+    dealer_value = get_card_value(dealer_upcard)
+    
+    if is_soft:
+        return get_soft_strategy(player_score, dealer_value)
+    else:
+        return get_hard_strategy(player_score, dealer_value, num_cards)
+
+def get_card_value(card_name):
+    """Get numerical value of a card for strategy purposes"""
+    if 'Ace' in card_name:
+        return 11  # For dealer upcard purposes, assume Ace = 11
+    elif any(face in card_name for face in ['Jack', 'Queen', 'King']):
+        return 10
+    else:
+        # Extract number from card name
+        for i in range(2, 11):
+            if str(i) in card_name:
+                return i
+    return 10  # Default to 10 if parsing fails
+
+def get_hard_strategy(player_score, dealer_value, num_cards):
+    """Hard total basic strategy"""
+    
+    # Pair splitting logic (if 2 cards of same rank)
+    if num_cards == 2:
+        # Note: We'd need to check if it's actually a pair, but for simplicity
+        # we'll focus on total-based strategy
+        pass
+    
+    win_prob = estimate_win_probability(player_score, dealer_value, False)
+    
+    if player_score <= 8:
+        return {
+            "advice": "HIT",
+            "win_probability": win_prob,
+            "explanation": f"With {player_score} vs dealer {dealer_value}, always hit to improve your hand."
+        }
+    elif player_score == 9:
+        if dealer_value in [3, 4, 5, 6]:
+            return {
+                "advice": "DOUBLE DOWN (or HIT)",
+                "win_probability": win_prob + 10,
+                "explanation": f"With 9 vs dealer {dealer_value}, doubling down is optimal if allowed."
+            }
+        else:
+            return {
+                "advice": "HIT",
+                "win_probability": win_prob,
+                "explanation": f"With 9 vs dealer {dealer_value}, hit to improve your hand."
+            }
+    elif player_score == 10:
+        if dealer_value <= 9:
+            return {
+                "advice": "DOUBLE DOWN (or HIT)",
+                "win_probability": win_prob + 15,
+                "explanation": f"With 10 vs dealer {dealer_value}, doubling down is very favorable."
+            }
+        else:
+            return {
+                "advice": "HIT",
+                "win_probability": win_prob,
+                "explanation": f"With 10 vs dealer {dealer_value}, hit rather than double."
+            }
+    elif player_score == 11:
+        return {
+            "advice": "DOUBLE DOWN (or HIT)",
+            "win_probability": win_prob + 20,
+            "explanation": f"With 11, doubling down is almost always the best play."
+        }
+    elif 12 <= player_score <= 16:
+        if dealer_value in [2, 3, 7, 8, 9, 10, 11]:
+            return {
+                "advice": "HIT",
+                "win_probability": win_prob,
+                "explanation": f"With {player_score} vs dealer {dealer_value}, you must hit despite bust risk."
+            }
+        else:  # Dealer 4, 5, 6
+            return {
+                "advice": "STAND",
+                "win_probability": win_prob + 10,
+                "explanation": f"With {player_score} vs dealer {dealer_value}, stand and hope dealer busts."
+            }
+    else:  # 17+
+        return {
+            "advice": "STAND",
+            "win_probability": win_prob,
+            "explanation": f"With {player_score}, always stand - excellent hand!"
+        }
+
+def get_soft_strategy(player_score, dealer_value):
+    """Soft total basic strategy"""
+    
+    win_prob = estimate_win_probability(player_score, dealer_value, True)
+    
+    if player_score <= 17:
+        if dealer_value in [4, 5, 6]:
+            return {
+                "advice": "DOUBLE DOWN (or HIT)",
+                "win_probability": win_prob + 15,
+                "explanation": f"Soft {player_score} vs dealer {dealer_value} - double down is optimal."
+            }
+        else:
+            return {
+                "advice": "HIT",
+                "win_probability": win_prob,
+                "explanation": f"Soft {player_score} - hit to improve without bust risk."
+            }
+    elif player_score == 18:
+        if dealer_value in [2, 7, 8]:
+            return {
+                "advice": "STAND",
+                "win_probability": win_prob,
+                "explanation": f"Soft 18 vs dealer {dealer_value} - standing is optimal."
+            }
+        elif dealer_value in [3, 4, 5, 6]:
+            return {
+                "advice": "DOUBLE DOWN (or STAND)",
+                "win_probability": win_prob + 10,
+                "explanation": f"Soft 18 vs dealer {dealer_value} - double if allowed, otherwise stand."
+            }
+        else:  # 9, 10, A
+            return {
+                "advice": "HIT",
+                "win_probability": win_prob - 5,
+                "explanation": f"Soft 18 vs dealer {dealer_value} - hit to try to improve."
+            }
+    else:  # 19+
+        return {
+            "advice": "STAND",
+            "win_probability": win_prob,
+            "explanation": f"Soft {player_score} is an excellent hand - always stand."
+        }
+
+def estimate_win_probability(player_score, dealer_value, is_soft):
+    """Estimate win probability based on basic strategy statistics"""
+    
+    # Base probabilities from basic strategy charts
+    base_prob = 50
+    
+    # Adjust for player hand strength
+    if player_score >= 20:
+        base_prob += 35
+    elif player_score >= 18:
+        base_prob += 20
+    elif player_score >= 17:
+        base_prob += 10
+    elif player_score <= 12:
+        base_prob -= 15
+    
+    # Adjust for dealer upcard
+    if dealer_value in [4, 5, 6]:  # Dealer bust cards
+        base_prob += 15
+    elif dealer_value in [2, 3]:
+        base_prob += 5
+    elif dealer_value in [9, 10, 11]:  # Strong dealer cards
+        base_prob -= 10
+    elif dealer_value in [7, 8]:
+        base_prob -= 5
+    
+    # Soft hands are slightly better
+    if is_soft and player_score <= 18:
+        base_prob += 5
+    
+    # Clamp between 5 and 95
+    return max(5, min(95, base_prob))
 
 # === Server Startup ===
 if __name__ == "__main__":

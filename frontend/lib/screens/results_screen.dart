@@ -9,12 +9,14 @@ class ResultsScreen extends StatefulWidget {
   final Map<String, dynamic> results;
   final XFile? originalImage;
   final int players;
+  final bool isAdviceMode;
 
   ResultsScreen({
     super.key, 
     required String resultsJson,
     this.originalImage,
     required this.players,
+    this.isAdviceMode = false,
   }) : results = jsonDecode(resultsJson);
 
   @override
@@ -24,6 +26,8 @@ class ResultsScreen extends StatefulWidget {
 class _ResultsScreenState extends State<ResultsScreen> {
   String? _markedImageData;
   bool _isLoadingMarkedImage = false;
+  String? _aiAdvice;
+  bool _isLoadingAdvice = false;
 
   Future<void> _showMarkedContours() async {
     if (widget.originalImage == null) {
@@ -133,6 +137,184 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
+  Future<void> _getAIAdvice() async {
+    setState(() {
+      _isLoadingAdvice = true;
+    });
+
+    try {
+      // Extract advice from results if available
+      if (widget.results.containsKey('advice')) {
+        setState(() {
+          _aiAdvice = widget.results['advice']['advice'];
+        });
+        _showAdviceDialog();
+      } else {
+        _showErrorDialog("No AI advice available");
+      }
+    } catch (e) {
+      _showErrorDialog("Failed to get AI advice: $e");
+    } finally {
+      setState(() {
+        _isLoadingAdvice = false;
+      });
+    }
+  }
+
+  void _showAdviceDialog() {
+    if (_aiAdvice == null) return;
+
+    final advice = widget.results['advice'];
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.grey.shade900,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.psychology, color: Colors.orange, size: 28),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'AI Advice',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Main recommendation
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Recommendation:',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      advice['advice'] ?? 'No recommendation available',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Win probability
+              if (advice.containsKey('win_probability'))
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Win Probability:',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${advice['win_probability']}%',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              const SizedBox(height: 16),
+              
+              // Explanation
+              if (advice.containsKey('explanation'))
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Why:',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        advice['explanation'],
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              const SizedBox(height: 20),
+              
+              // Close button
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.withOpacity(0.1),
+                    foregroundColor: Colors.orange,
+                    side: const BorderSide(color: Colors.orange),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text('Got it!'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildPlayerBlock(String name, Map<String, dynamic> data) {
     final cards = List<String>.from(data['cards']);
     final score = data['score'];
@@ -220,10 +402,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(top: 20, bottom: 40),
         children: [
-          buildPlayerBlock('Dealer', widget.results['dealer']),
-          buildPlayerBlock('Player 1', widget.results['player1']),
-          if (widget.results.containsKey('player2'))
-            buildPlayerBlock('Player 2', widget.results['player2']),
+          // In advice mode, only show player cards, no dealer
+          if (widget.isAdviceMode) ...[
+            buildPlayerBlock('Your Cards', widget.results['player1']),
+          ] else ...[
+            buildPlayerBlock('Dealer', widget.results['dealer']),
+            buildPlayerBlock('Player 1', widget.results['player1']),
+            if (widget.results.containsKey('player2'))
+              buildPlayerBlock('Player 2', widget.results['player2']),
+          ],
           const SizedBox(height: 30),
           // Show Detected Cards button (only if original image is available)
           if (widget.originalImage != null)
@@ -251,6 +438,43 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     : const Text(
                         'Show Detected Cards',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+              ),
+            ),
+          const SizedBox(height: 20),
+          // AI Advice button (only in advice mode)
+          if (widget.isAdviceMode)
+            Center(
+              child: ElevatedButton(
+                onPressed: _isLoadingAdvice ? null : _getAIAdvice,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange.withOpacity(0.1),
+                  foregroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: Colors.orange),
+                  ),
+                ),
+                child: _isLoadingAdvice
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.orange,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.psychology, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Show AI\'s Advice',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
               ),
             ),
