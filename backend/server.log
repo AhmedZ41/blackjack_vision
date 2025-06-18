@@ -91,3 +91,138 @@ INFO:     Finished server process [53442]
 INFO:     Started server process [57044]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [57044]
+INFO:     Started server process [61936]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61936]
+INFO:     Started server process [61945]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61945]
+INFO:     Started server process [61977]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61977]
+INFO:     Started server process [62007]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62007]
+INFO:     Started server process [62090]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62090]
+INFO:     Started server process [62127]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62127]
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Started server process [62154]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62154]
+INFO:     Started server process [62168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62168]
+INFO:     Started server process [62179]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Loaded 50 card templates
+Original image format: image/png
+Image shape: (726, 500, 3)
+Players parameter: advice
+Advice mode: True, Number of players: 0
+Converted to PNG format - Image shape: (726, 500, 3)
+Starting advice mode card detection on image shape: (726, 500, 3)
+Found 13 total contours in advice mode
+Advice mode contour 0: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 1: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 2: area=10, vertices=6
+  → Rejected: area too small
+Advice mode contour 3: area=10, vertices=6
+  → Rejected: area too small
+Advice mode contour 4: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 5: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 6: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 7: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 8: area=358273, vertices=4
+  → Added as card contour (aspect ratio: 0.69)
+Advice mode contour 9: area=10, vertices=6
+  → Rejected: area too small
+Advice mode contour 10: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 11: area=0, vertices=1
+  → Rejected: area too small
+Advice mode contour 12: area=10, vertices=6
+  → Rejected: area too small
+Found 1 card-like contours in advice mode
+Successfully warped advice mode card 1
+Extracted 1 cards in advice mode
+Card 1: King (confidence: 0.369)
+Detected cards - Dealer: [], Player1: ['King'], Player2: []
+Processing card rank: King
+Final score for ['King']: 10
+Processing card rank: King
+Final score for ['King']: 10
+INFO:     127.0.0.1:54859 - "POST /analyze/ HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62179]
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x00007ff848307800 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x00007ff848307800 (most recent call first):
+  <no Python frame>
