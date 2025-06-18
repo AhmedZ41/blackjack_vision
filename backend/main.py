@@ -830,63 +830,63 @@ def get_basic_advice_no_dealer(player_score, is_soft, num_cards, is_pair):
             return {
                 "advice": "HIT (Conservative: STAND)",
                 "win_probability": 65,
-                "explanation": f"Soft {player_score} - hitting improves your hand often, but standing is acceptable if conservative."
+                "explanation": f"Soft {player_score} - HITTING improves your hand often vs most dealers (Against 2-6: Double preferred, Against 7-8: Stand/Hit, Against 9-A: Hit). Conservative players can STAND."
             }
         elif player_score == 18:
             return {
                 "advice": "STAND",
                 "win_probability": 60,
-                "explanation": f"Soft {player_score} is borderline but decent. Without knowing dealer card, standing is safer."
+                "explanation": f"Soft {player_score} is borderline but decent. STANDING is safest without dealer info (Against 2,7,8: Stand, Against 3-6: Double, Against 9-A: Hit)."
             }
         else:  # 19+
             return {
                 "advice": "STAND",
                 "win_probability": 80,
-                "explanation": f"Soft {player_score} is an excellent hand. Always stand."
+                "explanation": f"Soft {player_score} is excellent - ALWAYS STAND vs any dealer card. Never risk this strong hand."
             }
     else:
-        # Enhanced hard hand strategy
+        # Enhanced hard hand strategy with dealer range insights
         if player_score <= 8:
             return {
                 "advice": "HIT",
                 "win_probability": 75,
-                "explanation": f"With {player_score}, impossible to bust. Always hit to improve your weak hand."
+                "explanation": f"Hard {player_score} - ALWAYS HIT (impossible to bust). Against any dealer card 2-A, you need improvement."
             }
         elif player_score <= 11:
             return {
                 "advice": "HIT",
                 "win_probability": 70,
-                "explanation": f"With {player_score}, you cannot bust on the next card. Always hit to improve."
+                "explanation": f"Hard {player_score} - ALWAYS HIT (cannot bust). Against weak dealers (4-6): Consider doubling. Against strong dealers (9-A): Just hit."
             }
         elif player_score == 12:
             return {
                 "advice": "HIT",
                 "win_probability": 50,
-                "explanation": f"Hard 12 is tricky, but without dealer info, hitting gives you more winning chances."
+                "explanation": f"Hard 12 - HIT without dealer info. Against weak dealers (4-6): Stand. Against others (2-3,7-A): Hit for better odds."
             }
         elif player_score <= 16:
             return {
                 "advice": "HIT",
                 "win_probability": 45,
-                "explanation": f"Hard {player_score} is weak. Despite bust risk, you need to improve to have a chance."
+                "explanation": f"Hard {player_score} - HIT despite bust risk. Against weak dealers (4-6): Stand. Against strong dealers (7-A): Must hit to compete."
             }
         elif player_score == 17:
             return {
                 "advice": "STAND",
                 "win_probability": 65,
-                "explanation": f"Hard 17 - while not great, hitting risks busting. Standing is the safer play."
+                "explanation": f"Hard 17 - ALWAYS STAND vs any dealer card (2-A). Hitting 17 is never mathematically correct due to bust risk."
             }
         elif player_score <= 19:
             return {
                 "advice": "STAND",
                 "win_probability": 75,
-                "explanation": f"Hard {player_score} is a good hand. Standing gives you excellent winning chances."
+                "explanation": f"Hard {player_score} - ALWAYS STAND vs any dealer card. Good winning chances against all dealer ranges."
             }
         else:  # 20+
             return {
                 "advice": "STAND",
                 "win_probability": 85,
-                "explanation": f"Hard {player_score} is excellent. Never risk this strong hand."
+                "explanation": f"Hard {player_score} - ALWAYS STAND (excellent hand). Never risk this strong total vs any dealer card."
             }
 
 def get_pair_splitting_advice_conservative(player_total):
@@ -1300,7 +1300,7 @@ def get_card_value(card_name):
     return 10  # Default to 10 if parsing fails
 
 def get_hard_strategy(player_score, dealer_value, num_cards):
-    """Enhanced hard total basic strategy with detailed dealer analysis"""
+    """Enhanced hard total basic strategy with detailed dealer-specific analysis"""
     
     # Categorize dealer strength for better explanations
     dealer_weak = dealer_value in [4, 5, 6]  # Bust cards
@@ -1309,106 +1309,132 @@ def get_hard_strategy(player_score, dealer_value, num_cards):
     dealer_strong = dealer_value in [9, 10, 11]  # Strong cards
     
     win_prob = estimate_win_probability(player_score, dealer_value, False)
+    dealer_context = get_dealer_specific_advice_text(dealer_value)
     
     if player_score <= 8:
         return {
             "advice": "ALWAYS HIT",
             "win_probability": win_prob,
-            "explanation": f"Hard {player_score} vs dealer {dealer_value} - impossible to bust, always hit to improve."
+            "explanation": f"Hard {player_score} vs dealer {dealer_value} - ALWAYS HIT (impossible to bust). {dealer_context}. Build your hand strength regardless of dealer card."
         }
     elif player_score == 9:
         if dealer_value in [3, 4, 5, 6]:
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 12,
-                "explanation": f"Hard 9 vs weak dealer {dealer_value} - excellent doubling opportunity. Dealer likely to bust or make weak total."
+                "explanation": f"Hard 9 vs dealer {dealer_value} - DOUBLE DOWN for excellent profit opportunity. {dealer_context}. Exploit dealer's weakness with aggressive play."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Hard 9 vs dealer {dealer_value} - too risky to double against strong card, just hit to improve."
+                "explanation": f"Hard 9 vs dealer {dealer_value} - HIT to improve safely. {dealer_context}. Too risky to double against strong dealer cards."
             }
     elif player_score == 10:
         if dealer_value <= 9:
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 15,
-                "explanation": f"Hard 10 vs dealer {dealer_value} - very strong doubling situation. Many cards give you 20."
+                "explanation": f"Hard 10 vs dealer {dealer_value} - DOUBLE DOWN (premium situation). {dealer_context}. Many cards give you 20 or 21."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Hard 10 vs strong dealer {dealer_value} - hit rather than double against Ace/10."
+                "explanation": f"Hard 10 vs dealer {dealer_value} - HIT rather than double. {dealer_context}. Strong dealer card makes doubling too risky."
             }
     elif player_score == 11:
         if dealer_value == 11:  # vs Ace
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 15,
-                "explanation": "Hard 11 vs dealer Ace - still favorable to double, many cards give you 21."
+                "explanation": f"Hard 11 vs dealer Ace - DOUBLE DOWN still favorable despite strong dealer card. {dealer_context}. Many cards give you 21."
             }
         else:
             return {
                 "advice": "ALWAYS DOUBLE DOWN",
                 "win_probability": win_prob + 20,
-                "explanation": f"Hard 11 vs dealer {dealer_value} - always double this premium hand. Best doubling situation."
+                "explanation": f"Hard 11 vs dealer {dealer_value} - ALWAYS DOUBLE DOWN (best situation). {dealer_context}. Premium doubling opportunity."
             }
     elif player_score == 12:
         if dealer_weak:
             return {
                 "advice": "STAND",
                 "win_probability": win_prob + 8,
-                "explanation": f"Hard 12 vs weak dealer {dealer_value} - dealer likely to bust, stand despite weak hand."
+                "explanation": f"Hard 12 vs dealer {dealer_value} - STAND and let dealer bust. {dealer_context}. Despite your weak hand, dealer will bust often."
             }
         elif dealer_medium_weak:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Hard 12 vs dealer {dealer_value} - marginal situation, but hitting gives better long-term results."
+                "explanation": f"Hard 12 vs dealer {dealer_value} - HIT in marginal situation. {dealer_context}. Hitting gives better long-term results."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Hard 12 vs strong dealer {dealer_value} - must improve despite bust risk."
+                "explanation": f"Hard 12 vs dealer {dealer_value} - HIT to improve despite bust risk. {dealer_context}. Must try to build competitive hand."
             }
     elif 13 <= player_score <= 16:  # The dreaded stiff hands
         if dealer_weak:
             return {
                 "advice": "STAND",
                 "win_probability": win_prob + 12,
-                "explanation": f"Hard {player_score} vs weak dealer {dealer_value} - dealer has high bust probability, let them take the risk."
+                "explanation": f"Hard {player_score} vs dealer {dealer_value} - STAND and let dealer take the risk. {dealer_context}. Your patience will be rewarded often."
             }
         elif dealer_medium_weak:
             return {
                 "advice": "STAND",
                 "win_probability": win_prob + 5,
-                "explanation": f"Hard {player_score} vs dealer {dealer_value} - slight edge to standing against weaker dealer card."
+                "explanation": f"Hard {player_score} vs dealer {dealer_value} - STAND with slight edge. {dealer_context}. Marginally better to avoid bust risk."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Hard {player_score} vs strong dealer {dealer_value} - terrible situation but must risk busting to have a chance."
+                "explanation": f"Hard {player_score} vs dealer {dealer_value} - HIT despite terrible situation. {dealer_context}. Must risk busting to have any winning chance."
             }
     elif player_score == 17:
         return {
             "advice": "ALWAYS STAND",
             "win_probability": win_prob,
-            "explanation": f"Hard 17 vs dealer {dealer_value} - never hit 17, the bust risk far outweighs potential gains."
+            "explanation": f"Hard 17 vs dealer {dealer_value} - ALWAYS STAND. {dealer_context}. Never hit 17 - bust risk far outweighs potential gains."
         }
     else:  # 18+
         strength_desc = "excellent" if player_score >= 20 else "very good"
         return {
             "advice": "ALWAYS STAND",
             "win_probability": win_prob,
-            "explanation": f"Hard {player_score} is {strength_desc} vs any dealer card - never risk this strong hand."
+            "explanation": f"Hard {player_score} is {strength_desc} vs any dealer card - ALWAYS STAND. {dealer_context}. Never risk this strong hand."
         }
 
+def get_dealer_specific_advice_text(dealer_value):
+    """Get specific advice text for dealer card ranges"""
+    if dealer_value == 11:  # Ace
+        return "Against Ace: Dealer has strongest upcard (blackjack possible, likely makes 19-21)"
+    elif dealer_value == 10:  # Face/10
+        return "Against 10/Face: Very strong dealer card (likely makes 20)"
+    elif dealer_value == 9:
+        return "Against 9: Strong dealer card (often makes 19)"
+    elif dealer_value == 8:
+        return "Against 8: Decent dealer card (often makes 18)"
+    elif dealer_value == 7:
+        return "Against 7: Neutral dealer card (usually makes 17)"
+    elif dealer_value == 6:
+        return "Against 6: Weak dealer card (high bust probability ~42%)"
+    elif dealer_value == 5:
+        return "Against 5: Very weak dealer card (highest bust probability ~43%)"
+    elif dealer_value == 4:
+        return "Against 4: Weak dealer card (high bust probability ~40%)"
+    elif dealer_value == 3:
+        return "Against 3: Somewhat weak dealer card (moderate bust risk ~37%)"
+    elif dealer_value == 2:
+        return "Against 2: Slightly weak dealer card (some bust risk ~35%)"
+    else:
+        return f"Against {dealer_value}: Analyze dealer strength"
+
 def get_soft_strategy(player_score, dealer_value):
-    """Enhanced soft total basic strategy with detailed analysis"""
+    """Enhanced soft total basic strategy with detailed dealer-specific analysis"""
     
     # Categorize dealer strength
     dealer_weak = dealer_value in [4, 5, 6]  # Bust cards
@@ -1417,88 +1443,89 @@ def get_soft_strategy(player_score, dealer_value):
     dealer_strong = dealer_value in [9, 10, 11]  # Strong cards
     
     win_prob = estimate_win_probability(player_score, dealer_value, True)
+    dealer_context = get_dealer_specific_advice_text(dealer_value)
     
     if player_score <= 15:  # Very weak soft hands (A,2 through A,4)
         if dealer_weak:
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 18,
-                "explanation": f"Soft {player_score} vs weak dealer {dealer_value} - double to maximize profit. Ace flexibility makes this safe."
+                "explanation": f"Soft {player_score} vs dealer {dealer_value} - DOUBLE to maximize profit against weak dealer. {dealer_context}. Your Ace flexibility makes this aggressive play safe."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Soft {player_score} vs dealer {dealer_value} - hit safely to improve. Ace can become 1 if needed."
+                "explanation": f"Soft {player_score} vs dealer {dealer_value} - HIT safely to improve your weak hand. {dealer_context}. Your Ace can become 1 if you draw high."
             }
     elif player_score == 16:  # Soft 16 (A,5)
         if dealer_weak:
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 15,
-                "explanation": f"Soft 16 vs weak dealer {dealer_value} - good doubling spot against bust cards."
+                "explanation": f"Soft 16 vs dealer {dealer_value} - DOUBLE DOWN against weak dealer. {dealer_context}. Take advantage of dealer's high bust probability."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Soft 16 vs dealer {dealer_value} - hit to improve safely with Ace flexibility."
+                "explanation": f"Soft 16 vs dealer {dealer_value} - HIT to improve safely with Ace flexibility. {dealer_context}. Need to build a stronger hand."
             }
     elif player_score == 17:  # Soft 17 (A,6)
         if dealer_weak:
             return {
                 "advice": "DOUBLE DOWN (or HIT)",
                 "win_probability": win_prob + 12,
-                "explanation": f"Soft 17 vs weak dealer {dealer_value} - double down against bust cards for maximum profit."
+                "explanation": f"Soft 17 vs dealer {dealer_value} - DOUBLE DOWN for maximum profit against bust cards. {dealer_context}. Exploit dealer's weakness."
             }
         elif dealer_strong:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob - 3,
-                "explanation": f"Soft 17 vs strong dealer {dealer_value} - need to improve against powerful cards."
+                "explanation": f"Soft 17 vs dealer {dealer_value} - HIT to improve against strong dealer. {dealer_context}. Your 17 won't beat dealer's likely totals."
             }
         else:
             return {
                 "advice": "HIT",
                 "win_probability": win_prob,
-                "explanation": f"Soft 17 vs dealer {dealer_value} - hit for improvement chances with safety net."
+                "explanation": f"Soft 17 vs dealer {dealer_value} - HIT for improvement with Ace safety net. {dealer_context}. Build a more competitive hand."
             }
     elif player_score == 18:  # Soft 18 (A,7) - most complex soft hand
         if dealer_value in [2, 7, 8]:
             return {
                 "advice": "STAND",
                 "win_probability": win_prob,
-                "explanation": f"Soft 18 vs dealer {dealer_value} - standing is optimal. Good hand against these dealer cards."
+                "explanation": f"Soft 18 vs dealer {dealer_value} - STAND with decent hand. {dealer_context}. Your 18 has good winning chances against these dealer cards."
             }
         elif dealer_weak:
             return {
                 "advice": "DOUBLE DOWN (or STAND)",
                 "win_probability": win_prob + 8,
-                "explanation": f"Soft 18 vs weak dealer {dealer_value} - double if allowed to extract more value, otherwise stand."
+                "explanation": f"Soft 18 vs dealer {dealer_value} - DOUBLE if allowed to extract more value. {dealer_context}. Otherwise STAND - both plays are profitable."
             }
         elif dealer_value == 3:
             return {
                 "advice": "DOUBLE DOWN (or STAND)",
                 "win_probability": win_prob + 5,
-                "explanation": f"Soft 18 vs dealer 3 - marginal doubling situation, but profitable long-term."
+                "explanation": f"Soft 18 vs dealer 3 - Marginal DOUBLE DOWN situation. {dealer_context}. Slightly profitable long-term but close decision."
             }
         else:  # vs 9, 10, A
             return {
                 "advice": "HIT",
                 "win_probability": win_prob - 8,
-                "explanation": f"Soft 18 vs strong dealer {dealer_value} - must improve against powerful cards. Hitting is safer than it looks."
+                "explanation": f"Soft 18 vs dealer {dealer_value} - HIT to improve against powerful dealer card. {dealer_context}. Your 18 often loses to dealer's likely strong totals."
             }
     elif player_score == 19:  # Soft 19 (A,8)
         return {
             "advice": "ALWAYS STAND",
             "win_probability": win_prob,
-            "explanation": f"Soft 19 vs dealer {dealer_value} - excellent hand, never risk improving it."
+            "explanation": f"Soft 19 vs dealer {dealer_value} - ALWAYS STAND with excellent hand. {dealer_context}. Never risk improving this strong total."
         }
     else:  # Soft 20+ (A,9 or A,A after split)
         return {
             "advice": "ALWAYS STAND",
             "win_probability": win_prob,
-            "explanation": f"Soft {player_score} is premium - never risk this outstanding hand."
+            "explanation": f"Soft {player_score} is premium - ALWAYS STAND. {dealer_context}. Never risk this outstanding hand against any dealer card."
         }
 
 def estimate_win_probability(player_score, dealer_value, is_soft):
