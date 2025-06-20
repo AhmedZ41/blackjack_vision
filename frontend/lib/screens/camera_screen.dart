@@ -95,7 +95,7 @@ Future<void> _uploadImage(XFile image, int players) async {
         'file',
         bytes,
         filename: image.name,
-        contentType: MediaType('image', 'jpeg'), // or 'png'
+        contentType: MediaType('image', 'png'), // or 'png'
       );
       request.files.add(multipartFile);
     } else {
@@ -308,8 +308,8 @@ Widget build(BuildContext context) {
                   ),
                 const SizedBox(height: 60),
                 _retroButton("Open Camera", _captureWebImage),
-                const SizedBox(height: 10),
-                _retroButton("Upload Image", _pickImageFromGallery),
+                //const SizedBox(height: 10),
+                //_retroButton("Upload Image", _pickImageFromGallery),
                 const SizedBox(height: 10),
                 _retroButton("Test Backend Connection", _testConnection),
               ],

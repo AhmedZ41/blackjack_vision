@@ -29,7 +29,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'AI-Powered Card Analyzer 🤖🃏',
+                'AI-Powered Card Analyzer 🤖🃏\n CV2D SS25\nAhmed - Eugen - Nico',
                 style: TextStyle(
                   fontSize: 16,
                   color: Color(0xFFAAAAAA),
@@ -53,6 +53,7 @@ class WelcomeScreen extends StatelessWidget {
                   '📸 How to Use:\n\n'
                   '• Place cards clearly in view\n'
                   '• Select number of players 👥\n'
+                  '• or select get an advice\n'
                   '• Snap a photo – we\'ll handle the rest!',
                   style: TextStyle(
                     fontSize: 16,
