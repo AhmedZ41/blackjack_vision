@@ -46,6 +46,12 @@ def load_templates() -> List[Tuple[str, np.ndarray]]:
 TEMPLATES = load_templates()
 print(f"Loaded {len(TEMPLATES)} card templates")
 
+# === Health check endpoint ===
+@app.get("/")
+async def health_check():
+    """Simple health check endpoint"""
+    return {"status": "ok", "message": "Blackjack Vision API is running"}
+
 # === Helper functions from notebook ===
 def order_points(pts):
     """Order points for perspective transform: top-left, top-right, bottom-right, bottom-left"""
