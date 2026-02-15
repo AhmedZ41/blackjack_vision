@@ -21,7 +21,7 @@ class _ConnectionFooterState extends State<ConnectionFooter> {
 
     try {
       final response = await http.get(
-        Uri.parse("${ApiConfig.baseUrl}/"),
+        Uri.parse("${ApiConfig.baseUrl}/docs"),
       ).timeout(const Duration(seconds: 5));
 
       setState(() {
