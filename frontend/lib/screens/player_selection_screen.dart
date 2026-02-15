@@ -9,6 +9,14 @@ class PlayerSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF00FFD1)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40),
@@ -16,7 +24,7 @@ class PlayerSelectionScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                '🧠 Choose Players 🎴',
+                'Choose NUMBER of Players',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

@@ -16,7 +16,7 @@ class WelcomeScreen extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                '♠ Blackjack Vision ♣',
+                'Blackjack Vision',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
@@ -29,7 +29,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'AI-Powered Card Analyzer 🤖🃏\n CV2D SS25\nAhmed - Eugen - Nico',
+                'AI-Powered Card Analyzer \n CV2D SS25\nAhmed - Eugen - Nico',
                 style: TextStyle(
                   fontSize: 16,
                   color: Color(0xFFAAAAAA),
@@ -82,7 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                   shadowColor: Colors.tealAccent,
                 ),
                 child: const Text(
-                  '🎲 Let’s Start',
+                  'Start',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,

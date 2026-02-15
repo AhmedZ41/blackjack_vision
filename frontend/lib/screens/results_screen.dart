@@ -383,6 +383,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.greenAccent),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: ShaderMask(
           shaderCallback: (bounds) => linearTitleShader(bounds),
           child: const Text(

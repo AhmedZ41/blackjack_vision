@@ -61,12 +61,12 @@ Future<void> _testConnection() async {
     try {
       final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/health'));
       if (response.statusCode == 200) {
-        _showErrorDialog("✅ Backend connection successful!\nURL: ${ApiConfig.baseUrl}");
+        _showErrorDialog("Backend connection successful!\nURL: ${ApiConfig.baseUrl}");
       } else {
-        _showErrorDialog("❌ Backend responded with status: ${response.statusCode}");
+        _showErrorDialog("Backend responded with status: ${response.statusCode}");
       }
     } catch (e) {
-      _showErrorDialog("❌ Cannot connect to backend\nURL: ${ApiConfig.baseUrl}\nError: $e");
+      _showErrorDialog("Cannot connect to backend\nURL: ${ApiConfig.baseUrl}\nError: $e");
     }
   }
 
@@ -106,7 +106,7 @@ Future<void> _uploadImage(XFile image, int players) async {
 
     if (response.statusCode == 200) {
       final responseBody = await response.stream.bytesToString();
-      print("✅ Backend response: $responseBody");
+      print("Backend response: $responseBody");
 
       Navigator.pushReplacement(
         context,
@@ -120,12 +120,12 @@ Future<void> _uploadImage(XFile image, int players) async {
         ),
       );
     } else {
-      print("❌ Error: ${response.statusCode}");
+      print("Error: ${response.statusCode}");
       Navigator.pop(context);
       _showErrorDialog("Server error: ${response.statusCode}");
     }
   } catch (e) {
-    print("❌ Upload exception: $e");
+    print("Upload exception: $e");
     Navigator.pop(context);
     _showErrorDialog("Upload failed. Is the backend running?");
   }
@@ -293,6 +293,14 @@ void _showErrorDialog(String message) {
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: Colors.black,
+    appBar: AppBar(
+      backgroundColor: Colors.black,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: retroAccent),
+        onPressed: () => Navigator.pop(context),
+      ),
+      elevation: 0,
+    ),
     body: kIsWeb
         ? Center(
             child: Column(
