@@ -1,122 +1,178 @@
 import 'package:flutter/material.dart';
 import 'camera_screen.dart';
+import '../widgets/connection_footer.dart';
 
-//nothing
 class PlayerSelectionScreen extends StatelessWidget {
   const PlayerSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF00FFD1)),
-          onPressed: () => Navigator.pop(context),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0F172A),
+              Color(0xFF1E293B),
+            ],
+          ),
         ),
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'Choose NUMBER of Players',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  foreground: Paint()
-                    ..shader = const LinearGradient(
-                      colors: [Color(0xFF00FFD1), Color(0xFF3A3AFF)],
-                    ).createShader(const Rect.fromLTWH(0, 0, 300, 70)),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Select the number of players below to start the card analysis.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CameraScreen(players: 1)),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  backgroundColor: const Color(0xFF00FFD1),
-                  foregroundColor: Colors.black,
-                  textStyle: const TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('1 Player'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CameraScreen(players: 2)),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  backgroundColor: const Color(0xFF00FFD1),
-                  foregroundColor: Colors.black,
-                  textStyle: const TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('2 Players'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CameraScreen(players: 0, isAdviceMode: true)),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.black,
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              // App bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.psychology, size: 24),
-                    SizedBox(width: 8),
-                    Text('Get an Advice'),
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ],
                 ),
               ),
-              const Spacer(),
+              
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth > 600 ? 64.0 : 32.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Title
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            Color(0xFF10B981),
+                            Color(0xFF06B6D4),
+                          ],
+                        ).createShader(bounds),
+                        child: Text(
+                          'Select Mode',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      Text(
+                        'Choose number of players or get AI advice',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white60,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 60),
+                      
+                      // Buttons
+                      _buildOptionButton(
+                        context,
+                        '1 Player',
+                        Icons.person_rounded,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CameraScreen(players: 1),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      _buildOptionButton(
+                        context,
+                        '2 Players',
+                        Icons.people_rounded,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CameraScreen(players: 2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      _buildOptionButton(
+                        context,
+                        'AI Advice',
+                        Icons.psychology_rounded,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CameraScreen(
+                              players: 0,
+                              isAdviceMode: true,
+                            ),
+                          ),
+                        ),
+                        isPrimary: true,
+                      ),
+                      
+                      const SizedBox(height: 40),
+                      
+                      // Connection Footer
+                      const ConnectionFooter(),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildOptionButton(
+    BuildContext context,
+    String label,
+    IconData icon,
+    VoidCallback onPressed, {
+    bool isPrimary = false,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPrimary ? Color(0xFF10B981) : Colors.white.withOpacity(0.1),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: isPrimary 
+              ? BorderSide.none 
+              : BorderSide(color: Colors.white.withOpacity(0.2)),
+          ),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 22),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

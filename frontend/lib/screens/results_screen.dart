@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../config/api_config.dart';
 import 'dart:typed_data';
+import '../widgets/connection_footer.dart';
 
 class ResultsScreen extends StatefulWidget {
   final Map<String, dynamic> results;
@@ -83,35 +84,46 @@ class _ResultsScreenState extends State<ResultsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.black,
-        child: Container(
-          padding: const EdgeInsets.all(16),
+        backgroundColor: Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Detected Cards',
                 style: TextStyle(
-                  color: Colors.greenAccent,
+                  color: Color(0xFF10B981),
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               if (_markedImageData != null)
-                Image.memory(
-                  base64Decode(_markedImageData!.split(',')[1]),
-                  fit: BoxFit.contain,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    base64Decode(_markedImageData!.split(',')[1]),
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.greenAccent.withOpacity(0.1),
-                  foregroundColor: Colors.greenAccent,
-                  side: const BorderSide(color: Colors.greenAccent),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                    ),
+                  ),
+                  child: const Text('Close'),
                 ),
-                child: const Text('Close'),
               ),
             ],
           ),
@@ -124,13 +136,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text("Error", style: TextStyle(color: Colors.red)),
         content: Text(message, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("OK", style: TextStyle(color: Colors.greenAccent)),
+            child: const Text("OK", style: TextStyle(color: Color(0xFF10B981))),
           ),
         ],
       ),
@@ -169,47 +182,47 @@ class _ResultsScreenState extends State<ResultsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: Color(0xFF1E293B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          padding: const EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  Icon(Icons.psychology, color: Colors.orange, size: 28),
+                  Icon(Icons.psychology_rounded, color: Color(0xFF10B981), size: 28),
                   const SizedBox(width: 12),
                   const Text(
                     'AI Advice',
                     style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               
-              // Main recommendation
+              // Recommendation
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Color(0xFF10B981).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(color: Color(0xFF10B981).withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Recommendation:',
+                    Text(
+                      'Recommendation',
                       style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF10B981),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -225,87 +238,91 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
               ),
               
-              const SizedBox(height: 16),
-              
-              // Win probability
-              if (advice.containsKey('win_probability'))
+              if (advice.containsKey('win_probability')) ...[
+                const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Win Probability:',
+                      Text(
+                        'Win Probability',
                         style: TextStyle(
-                          color: Colors.green,
+                          color: Colors.white70,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 8),
                       Text(
                         '${advice['win_probability']}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
               
-              const SizedBox(height: 16),
-              
-              // Explanation
-              if (advice.containsKey('explanation'))
+              if (advice.containsKey('explanation')) ...[
+                const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade800.withOpacity(0.5),
+                    color: Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Why:',
+                      Text(
+                        'Why',
                         style: TextStyle(
-                          color: Colors.grey,
+                          color: Colors.white70,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         advice['explanation'],
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white,
                           fontSize: 14,
+                          height: 1.5,
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               
-              // Close button
-              Center(
+              SizedBox(
+                height: 48,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.withOpacity(0.1),
-                    foregroundColor: Colors.orange,
-                    side: const BorderSide(color: Colors.orange),
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    backgroundColor: Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Got it!'),
+                  child: const Text(
+                    'Got it!',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -319,57 +336,75 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final cards = List<String>.from(data['cards']);
     final score = data['score'];
 
-    return Card(
-      color: Colors.grey.shade900,
-      margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-      shape: RoundedRectangleBorder(
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.greenAccent.withOpacity(0.2)),
-      ),
-      elevation: 6,
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.greenAccent,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: cards
-                  .map((card) => Chip(
-                        label: Text(card,
-                            style: const TextStyle(
-                                fontSize: 16, color: Colors.white)),
-                        backgroundColor: Colors.black,
-                        shape: StadiumBorder(
-                          side: BorderSide(
-                            color: Colors.greenAccent.withOpacity(0.3),
-                          ),
-                        ),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Total: $score',
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontFamily: 'Courier',
-              ),
-            ),
-          ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF10B981),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Color(0xFF10B981).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Score: $score',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: cards
+                .map((card) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Text(
+                        card,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ],
       ),
     );
   }
@@ -381,130 +416,154 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.greenAccent),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: ShaderMask(
-          shaderCallback: (bounds) => linearTitleShader(bounds),
-          child: const Text(
-            "Results",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // Fallback color
-              letterSpacing: 1.5,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0F172A),
+              Color(0xFF1E293B),
+            ],
           ),
         ),
-        backgroundColor: Colors.grey.shade900,
-        centerTitle: true,
-        elevation: 4,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 20, bottom: 40),
-        children: [
-          // In advice mode, only show player cards, no dealer
-          if (widget.isAdviceMode) ...[
-            buildPlayerBlock('Your Cards', widget.results['player1']),
-          ] else ...[
-            buildPlayerBlock('Dealer', widget.results['dealer']),
-            buildPlayerBlock('Player 1', widget.results['player1']),
-            if (widget.results.containsKey('player2'))
-              buildPlayerBlock('Player 2', widget.results['player2']),
-          ],
-          const SizedBox(height: 30),
-          // Show Detected Cards button (only if original image is available)
-          if (widget.originalImage != null)
-            Center(
-              child: ElevatedButton(
-                onPressed: _isLoadingMarkedImage ? null : _showMarkedContours,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                  foregroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Colors.blueAccent),
-                  ),
-                ),
-                child: _isLoadingMarkedImage
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.blueAccent,
-                          strokeWidth: 2,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // App bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Results',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
-                      )
-                    : const Text(
+                      ),
+                    ),
+                    SizedBox(width: 48), // Balance the back button
+                  ],
+                ),
+              ),
+              
+              // Content
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    // Show cards
+                    if (widget.isAdviceMode) ...[
+                      buildPlayerBlock('Your Cards', widget.results['player1']),
+                    ] else ...[
+                      buildPlayerBlock('Dealer', widget.results['dealer']),
+                      const SizedBox(height: 16),
+                      buildPlayerBlock('Player 1', widget.results['player1']),
+                      if (widget.results.containsKey('player2')) ...[
+                        const SizedBox(height: 16),
+                        buildPlayerBlock('Player 2', widget.results['player2']),
+                      ],
+                    ],
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Action buttons
+                    if (widget.originalImage != null)
+                      _buildActionButton(
                         'Show Detected Cards',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        Icons.visibility_rounded,
+                        _showMarkedContours,
+                        isLoading: _isLoadingMarkedImage,
                       ),
+                    
+                    if (widget.isAdviceMode) ...[
+                      const SizedBox(height: 16),
+                      _buildActionButton(
+                        'Show AI Advice',
+                        Icons.psychology_rounded,
+                        _getAIAdvice,
+                        isLoading: _isLoadingAdvice,
+                        isPrimary: true,
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 16),
+                    _buildActionButton(
+                      'Play Again',
+                      Icons.refresh_rounded,
+                      () => Navigator.popUntil(context, (route) => route.isFirst),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Connection Footer
+                    const ConnectionFooter(),
+                  ],
+                ),
               ),
-            ),
-          const SizedBox(height: 20),
-          // AI Advice button (only in advice mode)
-          if (widget.isAdviceMode)
-            Center(
-              child: ElevatedButton(
-                onPressed: _isLoadingAdvice ? null : _getAIAdvice,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.withOpacity(0.1),
-                  foregroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Colors.orange),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildActionButton(
+    String label,
+    IconData icon,
+    VoidCallback onPressed, {
+    bool isLoading = false,
+    bool isPrimary = false,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPrimary 
+            ? Color(0xFF10B981) 
+            : Colors.white.withOpacity(0.1),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: isPrimary 
+              ? BorderSide.none 
+              : BorderSide(color: Colors.white.withOpacity(0.2)),
+          ),
+          elevation: 0,
+        ),
+        child: isLoading
+          ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: _isLoadingAdvice
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.orange,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.psychology, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Show AI\'s Advice',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-              ),
+              ],
             ),
-          const SizedBox(height: 20),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.popUntil(context, (route) => route.isFirst);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent.withOpacity(0.1),
-                foregroundColor: Colors.greenAccent,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: Colors.greenAccent),
-                ),
-              ),
-              child: const Text(
-                'Play Again',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

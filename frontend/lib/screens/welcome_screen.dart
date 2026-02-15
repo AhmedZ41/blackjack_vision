@@ -1,96 +1,154 @@
 import 'package:flutter/material.dart';
 import 'player_selection_screen.dart';
+import '../widgets/connection_footer.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D), // Deep black
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(),
-              Text(
-                'Blackjack Vision',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  foreground: Paint()
-                    ..shader = LinearGradient(
-                      colors: [Color(0xFF00FFD1), Color(0xFF3A3AFF)],
-                    ).createShader(Rect.fromLTWH(0, 0, 200, 70)),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'AI-Powered Card Analyzer \n CV2D SS25\nAhmed - Eugen - Nico',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFFAAAAAA),
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 40),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white24),
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1A1A1A), Color(0xFF121212)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: const Text(
-                  '📸 How to Use:\n\n'
-                  '• Place cards clearly in view\n'
-                  '• Select number of players 👥\n'
-                  '• or select get an advice\n'
-                  '• Snap a photo – we\'ll handle the rest!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PlayerSelectionScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  backgroundColor: const Color(0xFF00FFD1),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 10,
-                  shadowColor: Colors.tealAccent,
-                ),
-                child: const Text(
-                  'Start',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0F172A),
+              Color(0xFF1E293B),
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth > 600 ? 64.0 : 32.0,
+              vertical: 40,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Top spacer
+                SizedBox(height: screenHeight * 0.1),
+                
+                // Main content
+                Column(
+                  children: [
+                    // App icon
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFF10B981),
+                            Color(0xFF06B6D4),
+                          ],
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '♠️♣️',
+                          style: TextStyle(fontSize: 44),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    
+                    // App title
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          Color(0xFF10B981),
+                          Color(0xFF06B6D4),
+                        ],
+                      ).createShader(bounds),
+                      child: Text(
+                        'Blackjack Vision',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth > 600 ? 44 : 36,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Subtitle
+                    Text(
+                      'AI-Powered Card Analysis',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white60,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Bottom section
+                Column(
+                  children: [
+                    // CTA button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlayerSelectionScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Get Started',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Credits
+                    Text(
+                      'CV2D SS25 • Ahmed • Eugen • Nico',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white30,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Connection Footer
+                    const ConnectionFooter(),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
